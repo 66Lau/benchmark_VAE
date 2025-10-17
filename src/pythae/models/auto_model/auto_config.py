@@ -30,6 +30,11 @@ class AutoConfig(BaseConfig):
 
             model_config = Adversarial_AE_Config.from_json_file(json_path)
 
+        elif config_name == "AmortizedDualVAEConfig":
+            from ..amortized_dual_vae import AmortizedDualVAEConfig
+
+            model_config = AmortizedDualVAEConfig.from_json_file(json_path)
+
         elif config_name == "AEConfig":
             from ..ae import AEConfig
 
