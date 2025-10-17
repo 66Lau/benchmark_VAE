@@ -15,6 +15,7 @@ and named likewise the model. The following modules can be found in this folder:
 """
 
 from .adversarial_ae import Adversarial_AE, Adversarial_AE_Config
+from .amortized_dual_vae import AmortizedDualVAE, AmortizedDualVAEConfig
 from .ae import AE, AEConfig
 from .auto_model import AutoModel
 from .base import BaseAE, BaseAEConfig
@@ -99,4 +100,6 @@ __all__ = [
     "PIWAEConfig",
     "HRQVAE",
     "HRQVAEConfig",
+    "AmortizedDualVAE",
+    "AmortizedDualVAEConfig",
 ]

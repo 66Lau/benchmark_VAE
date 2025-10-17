@@ -79,6 +79,11 @@ class AutoModel(nn.Module):
 
             model = HRQVAE.load_from_folder(dir_path=dir_path)
 
+        elif model_name == "AmortizedDualVAEConfig":
+            from ..amortized_dual_vae import AmortizedDualVAE
+
+            model = AmortizedDualVAE.load_from_folder(dir_path=dir_path)
+
         elif model_name == "INFOVAE_MMD_Config":
             from ..info_vae import INFOVAE_MMD
 
@@ -391,6 +396,13 @@ class AutoModel(nn.Module):
             from ..wae_mmd import WAE_MMD
 
             model = WAE_MMD.load_from_hf_hub(
+                hf_hub_path=hf_hub_path, allow_pickle=allow_pickle
+            )
+
+        elif model_name == "AmortizedDualVAEConfig":
+            from ..amortized_dual_vae import AmortizedDualVAE
+
+            model = AmortizedDualVAE.load_from_hf_hub(
                 hf_hub_path=hf_hub_path, allow_pickle=allow_pickle
             )
 
