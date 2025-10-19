@@ -73,19 +73,18 @@ class LangevinPCD:
         device = lam.device
         dtype = lam.dtype
 
-        with torch.no_grad():
-            self._ensure_buffer(batch_size, device, dtype)
+        self._ensure_buffer(batch_size, device, dtype)
 
-            samples = []
-            buffer = self._buffer
+        samples = []
+        buffer = self._buffer
 
-            for _ in range(self.n_samples):
-                buffer = self._run_chain(buffer, lam.detach(), basis)
-                samples.append(buffer.unsqueeze(1))
+        for _ in range(self.n_samples):
+            buffer = self._run_chain(buffer, lam, basis)
+            samples.append(buffer.unsqueeze(1))
 
-            self._buffer = buffer.detach()
+        self._buffer = buffer.detach()
 
-            return torch.cat(samples, dim=1)
+        return torch.cat(samples, dim=1)
 
     def _run_chain(
         self, z: torch.Tensor, lam: torch.Tensor, basis: MonomialBasis
@@ -100,14 +99,17 @@ class LangevinPCD:
     def _langevin_step(
         self, z: torch.Tensor, lam: torch.Tensor, basis: MonomialBasis
     ) -> torch.Tensor:
+        grad_mode = torch.is_grad_enabled()
+
         with torch.enable_grad():
-            z = z.clone().detach().requires_grad_(True)
+            if not z.requires_grad:
+                z = z.detach().requires_grad_(True)
             energy = self._energy(z, lam, basis)
-            grad_z = torch.autograd.grad(energy.sum(), z, create_graph=False)[0]
+            grad_z = torch.autograd.grad(energy.sum(), z, create_graph=grad_mode)[0]
 
         noise = torch.randn_like(z) * self.noise_scale
-        updated = z.detach() - self.step_size * grad_z.detach() + noise
-        updated.clamp_(- self.update_clamp, self.update_clamp)
+        updated = z - self.step_size * grad_z + noise
+        updated = torch.clamp(updated, -self.update_clamp, self.update_clamp)
         return updated
 
     def _energy(self, z: torch.Tensor, lam: torch.Tensor, basis: MonomialBasis) -> torch.Tensor:

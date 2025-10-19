@@ -63,7 +63,7 @@ examples/scripts/reproducibility/reproducibility/*
 examples/scripts/reproducibility/sync.ipynb
 examples/notebooks/my_offline_runs/*
 
-
+examples/notebooks/models_training/my_amortized_dual_vae/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

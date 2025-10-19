@@ -13,21 +13,22 @@ class AmortizedDualVAEConfig(BaseAEConfig):
     """Configuration for the Amortized Dual Solver VAE."""
 
     reconstruction_loss: Literal["bce", "mse"] = "mse"
-    polynomial_order: int = 2
-    energy_scale: float = 0.1
+    polynomial_order: int = 1
+    energy_scale: float = 0.5
 
-    langevin_steps: int = 30
-    langevin_step_size: float = 1e-3
+    langevin_steps: int = 20
+    langevin_step_size: float = 1e-2
     langevin_n_samples: int = 4
-    langevin_reinit_prob: float = 0.1
+    langevin_reinit_prob: float = 0.5
     langevin_noise_scale: Optional[float] = None
     langevin_update_clamp: float = 3.0
 
-    score_weight: float = 0.1
-    dual_weight: float = 0.001
-    moment_weight: float = 1.0
-    lambda_reg_weight: float = 1
+    score_weight: float = 0.0
+    dual_weight: float = 1e-3
+    moment_weight: float = 0.8
+    lambda_reg_weight: float = 0.1
     moment_reg_weight: float = 0.0
+    reencode_weight: float = 0.1
 
     encoder_hidden_dim: int = 512
     encoder_num_layers: int = 2

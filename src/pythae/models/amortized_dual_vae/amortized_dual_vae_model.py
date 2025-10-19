@@ -91,7 +91,7 @@ class AmortizedDualVAE(BaseAE):
 
         lam = self.lambda_net(moment_hat)
 
-        z_samples = self.sampler.sample(lam.detach(), self.basis)
+        z_samples = self.sampler.sample(lam, self.basis)
         batch_size, num_samples, latent_dim = z_samples.shape
 
         flat_z = z_samples.reshape(batch_size * num_samples, latent_dim)
@@ -99,9 +99,14 @@ class AmortizedDualVAE(BaseAE):
         recon = decoder_output["reconstruction"].reshape(
             batch_size, num_samples, *self.input_dim
         )
-        recon_mean = recon.mean(dim=1)
+        recon_mean = recon[:, -1]
+        # recon_mean = recon.mean(dim=1)
 
         rec_loss, rec_matrix = self._reconstruction_terms(recon, x)
+
+        reencode_output = self.encoder(recon_mean)
+        reencoded_moment = reencode_output.embedding
+        reencode_loss = F.mse_loss(reencoded_moment, moment_hat.detach())
 
         features = self.basis(z_samples.reshape(-1, latent_dim)).reshape(
             batch_size, num_samples, -1
@@ -128,12 +133,15 @@ class AmortizedDualVAE(BaseAE):
             + self.model_config.dual_weight * dual_proxy
             + self.model_config.moment_weight * moment_loss
             + self.model_config.lambda_reg_weight * lambda_reg
+            + self.model_config.reencode_weight * reencode_loss
         )
         print("reconstruction loss:", rec_loss.item(),
               "score proxy:", score_proxy.item(),
               "dual proxy:", dual_proxy.item(),
               "moment loss:", moment_loss.item(),
-              "lambda reg:", lambda_reg.item())
+              "lambda reg:", lambda_reg.item(),
+              "reencode loss:", reencode_loss.item()
+              )
 
         if self.model_config.moment_reg_weight > 0:
             total_loss = total_loss + self.model_config.moment_reg_weight * moment_reg
@@ -146,6 +154,7 @@ class AmortizedDualVAE(BaseAE):
             moment_loss=moment_loss,
             lambda_reg=lambda_reg,
             moment_reg=moment_reg,
+            reencode_loss=reencode_loss,
             recon_x=recon_mean,
             z=z_samples[:, -1, :],
             lambda_params=lam,
