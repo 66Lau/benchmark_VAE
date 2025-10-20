@@ -90,6 +90,7 @@ class AmortizedDualVAE(BaseAE):
         moment_hat = encoder_output.embedding
 
         lam = self.lambda_net(moment_hat)
+        lam = torch.tanh(lam / self.model_config.lam_bound) * self.model_config.lam_bound
 
         z_samples = self.sampler.sample(lam, self.basis)
         batch_size, num_samples, latent_dim = z_samples.shape
@@ -122,7 +123,7 @@ class AmortizedDualVAE(BaseAE):
 
         dual_proxy = ((feature_mean.detach() - moment_hat) * lam).sum(dim=-1).mean()
 
-        moment_loss = F.mse_loss(feature_mean.detach(), moment_hat)
+        moment_loss = F.mse_loss(feature_mean, moment_hat)
 
         lambda_reg = (lam**2).mean()
         moment_reg = (moment_hat**2).mean()
