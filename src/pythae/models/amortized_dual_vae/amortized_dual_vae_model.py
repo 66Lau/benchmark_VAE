@@ -123,7 +123,8 @@ class AmortizedDualVAE(BaseAE):
 
         dual_proxy = ((feature_mean.detach() - moment_hat) * lam).sum(dim=-1).mean()
 
-        moment_loss = F.mse_loss(feature_mean, moment_hat)
+        moment_loss = (F.mse_loss(feature_mean.detach(), moment_hat) 
+                      + F.mse_loss(feature_mean, moment_hat.detach()))/2
 
         lambda_reg = (lam**2).mean()
         moment_reg = (moment_hat**2).mean()
